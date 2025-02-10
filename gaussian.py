@@ -15,27 +15,28 @@ def forward_elimination(A, B):
                     A[i], A[k] = A[k], A[i]
                     B[i], B[k] = B[k], B[i]
                     break
-            else:
-                raise ValueError("Singular matrix")
 
         for j in range(i + 1, n):
             factor = A[j][i] / A[i][i]
             for k in range(i, n):
                 A[j][k] -= factor * A[i][k]
             B[j] -= factor * B[i]
+        print(f"\nMatrix after eliminating {i + 1}:")
+        for row in A:
+            print([f'{val:.5f}' for val in row])
+        print(f"Vector after eliminating {i + 1}: {[f'{val:.5f}' for val in B]}")
     return A, B
 
-if __name__ == "__main__":
-    n = int(input("Enter the size of the matrix: "))
-    A, B = matrix_generator(n)
-    print("Original Matrix A:")
-    for row in A:
-        print(row)
-    print("Original Vector B:", B)
+n = 3
+A, B = matrix_generator(n)
+print("Original Matrix:")
+for row in A:
+    print([f'{val:.5f}' for val in row])
+print("Original Vector:", [f'{val:.5f}' for val in B])
 
-    A_eliminated, B_eliminated = forward_elimination(A, B)
+A_eliminated, B_eliminated = forward_elimination(A, B)
 
-    print("\nEliminated Matrix A:")
-    for row in A_eliminated:
-        print(row)
-    print("Eliminated Vector B:", B_eliminated)
+print("\nFinal Matrix:")
+for row in A_eliminated:
+    print([f'{val:.5f}' for val in row])
+print("Final Vector:", [f'{val:.5f}' for val in B_eliminated])
