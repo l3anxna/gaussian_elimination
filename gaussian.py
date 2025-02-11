@@ -1,4 +1,5 @@
 import random
+import numpy as np
 
 def matrix_generator(n):
     A = [[random.randint(1, 10) for _ in range(n)] for _ in range(n)]
@@ -6,17 +7,20 @@ def matrix_generator(n):
     B = [sum(A[i][j] * x[j] for j in range(n)) for i in range(n)]
     return A, B
 
+def hilbert_matrix(n):
+    return np.array([[1 / (i + j + 1) for j in range(n)] for i in range(n)])
+
 def forward_elimination(A, B):
     n = len(A)
+    A = [row[:] for row in A]
+    B = B[:]
     for i in range(n):
         if A[i][i] == 0:
             for k in range(i + 1, n):
                 if A[k][i] != 0:
-                    A[i], A[k] = A[k], A[i]
+                    A[i], A[k] = A[k][:], A[i][:]
                     B[i], B[k] = B[k], B[i]
                     break
-            else:
-                raise ValueError("Singular matrix")
 
         for j in range(i + 1, n):
             factor = A[j][i] / A[i][i]
@@ -36,23 +40,36 @@ def backward_substitution(A, B):
     return x
 
 def test_solution(A, B, x):
-    B_computed = [sum(A[i][j] * x[j] for j in range(len(x))) for i in range(len(A))]
-    return all(abs(B_computed[i] - B[i]) < 1e-5 for i in range(len(B)))
+    A = np.array(A)
+    x = np.array(x)
+    B = np.array(B)
+    B_computed = A @ x
+    residue = B_computed - B
+    return np.linalg.norm(residue)
 
-n = int(input("Enter the size of the matrix: "))
-A, B = matrix_generator(n)
-print("Original Matrix A:")
-for row in A:
-    print([f'{val:.5f}' for val in row])
-print("Original Vector B:", [f'{val:.5f}' for val in B])
+sizes = [5, 10, 20]
+results_normal = {}
+results_hilbert = {}
 
-A_eliminated, B_eliminated = forward_elimination(A, B)
-x = backward_substitution(A_eliminated, B_eliminated)
-result = test_solution(A, B, x)
+for n in sizes:
+    A_normal, B_normal = matrix_generator(n)
+    A_normal_eliminated, B_normal_eliminated = forward_elimination(A_normal, B_normal)
+    x_normal = backward_substitution(A_normal_eliminated, B_normal_eliminated)
+    residue_normal = test_solution(A_normal, B_normal, x_normal)
+    results_normal[n] = residue_normal
 
-print('Eliminated Matrix A:')
-for row in A_eliminated:
-    print([f'{val:.5f}' for val in row])
-print('Eliminated Vector B:', [f'{val:.5f}' for val in B_eliminated])
-print('Solution Vector x:', [f'{val:.5f}' for val in x])
-print('Test Solution:', result)
+    A_hilbert = hilbert_matrix(n)
+    x_true = np.array([i + 1 for i in range(n)])
+    B_hilbert = A_hilbert @ x_true
+    A_hilbert_list = A_hilbert.tolist()
+    B_hilbert_list = B_hilbert.tolist()
+    try:
+        A_hilbert_eliminated, B_hilbert_eliminated = forward_elimination(A_hilbert_list, B_hilbert_list)
+        x_hilbert = backward_substitution(A_hilbert_eliminated, B_hilbert_eliminated)
+        residue_hilbert = test_solution(A_hilbert_list, B_hilbert_list, x_hilbert)
+        results_hilbert[n] = residue_hilbert
+    except ValueError as e:
+        results_hilbert[n] = str(e)
+
+print("Normal Matrix:", results_normal)
+print("Hilbert Matrix:", results_hilbert)
