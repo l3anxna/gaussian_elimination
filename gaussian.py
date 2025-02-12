@@ -1,14 +1,17 @@
 import random
 import numpy as np
 
+
 def matrix_generator(n):
     A = [[random.randint(1, 10) for _ in range(n)] for _ in range(n)]
     x = [i + 1 for i in range(n)]
     B = [sum(A[i][j] * x[j] for j in range(n)) for i in range(n)]
     return A, B
 
+
 def hilbert_matrix(n):
     return np.array([[1 / (i + j + 1) for j in range(n)] for i in range(n)])
+
 
 def forward_elimination(A, B):
     n = len(A)
@@ -29,6 +32,7 @@ def forward_elimination(A, B):
             B[j] -= factor * B[i]
     return A, B
 
+
 def backward_substitution(A, B):
     n = len(A)
     x = [0] * n
@@ -39,6 +43,7 @@ def backward_substitution(A, B):
         x[i] /= A[i][i]
     return x
 
+
 def test_solution(A, B, x):
     A = np.array(A)
     x = np.array(x)
@@ -46,6 +51,7 @@ def test_solution(A, B, x):
     B_computed = A @ x
     residue = B_computed - B
     return np.linalg.norm(residue)
+
 
 sizes = [5, 10, 20]
 results_normal = {}
@@ -64,7 +70,9 @@ for n in sizes:
     A_hilbert_list = A_hilbert.tolist()
     B_hilbert_list = B_hilbert.tolist()
     try:
-        A_hilbert_eliminated, B_hilbert_eliminated = forward_elimination(A_hilbert_list, B_hilbert_list)
+        A_hilbert_eliminated, B_hilbert_eliminated = forward_elimination(
+            A_hilbert_list, B_hilbert_list
+        )
         x_hilbert = backward_substitution(A_hilbert_eliminated, B_hilbert_eliminated)
         residue_hilbert = test_solution(A_hilbert_list, B_hilbert_list, x_hilbert)
         results_hilbert[n] = residue_hilbert
